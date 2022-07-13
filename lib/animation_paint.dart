@@ -1,3 +1,4 @@
+import 'package:ble_ips_example4/trilateration_method.dart';
 import 'package:flutter/material.dart';
 import 'grid/grid_widget.dart';
 import 'package:get/get.dart';
@@ -55,7 +56,6 @@ class CircleRouteState extends State<CircleRoute>
                             .rssi) /
                     (10 * bleController.selectedConstNList[idx])));
           }
-          print(radiusList);
         }
       });
   }
@@ -78,8 +78,13 @@ class CirclePainter extends CustomPainter {
   var centerXList = [];
   var centerYList = [];
   var radiusList = [];
-  var circlePaint = Paint()
+  var anchorePaint = Paint()
     ..color = Colors.lightBlue
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2.0
+    ..isAntiAlias = true;
+  var positionPaint = Paint()
+    ..color = Colors.redAccent
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2.0
     ..isAntiAlias = true;
@@ -88,54 +93,84 @@ class CirclePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    List<Anchor> anchorList = [];
     if (radiusList.isNotEmpty) {
       for (int i = 0; i < radiusList.length; i++) {
+        // radius
+        anchorList.add(Anchor(
+            centerX: centerXList[i],
+            centerY: centerYList[i],
+            radius: radiusList[i]));
         canvas.drawCircle(Offset(centerXList[i] * 100, centerYList[i] * 100),
-            radiusList[i] * 100, circlePaint);
-        var textPainter1 = TextPainter(
+            radiusList[i] * 100, anchorePaint);
+        // centerX, centerY
+        canvas.drawCircle(Offset(centerXList[i] * 100, centerYList[i] * 100), 2,
+            anchorePaint);
+        // anchor text paint
+        var anchorTextPainter = TextPainter(
           text: TextSpan(
             text: 'Anchor$i\n(${centerXList[i]}, ${centerYList[i]})',
             style: const TextStyle(
               color: Colors.black,
-              fontSize: 15,
+              fontSize: 12,
             ),
           ),
           textDirection: TextDirection.ltr,
         );
-        textPainter1.layout(
+        anchorTextPainter.layout(
           minWidth: 0,
           maxWidth: size.width,
         );
-        textPainter1.paint(
+        anchorTextPainter.paint(
             canvas, Offset(centerXList[i] * 100 - 27, centerYList[i] * 100));
-        /*
-        var textPainter2 = TextPainter(
+        var radiusTextPainter = TextPainter(
           text: TextSpan(
-            text: '${radiusList[i].toStringAsFixed(2)}[m]',
+            text: '  ${radiusList[i].toStringAsFixed(2)}m',
             style: const TextStyle(
               color: Colors.black,
-              fontSize: 15,
+              fontSize: 10,
             ),
           ),
           textDirection: TextDirection.ltr,
         );
-
-        textPainter2.layout(
+        radiusTextPainter.layout(
           minWidth: 0,
           maxWidth: size.width,
         );
-        textPainter2.paint(
+
+        radiusTextPainter.paint(
             canvas,
             Offset(centerXList[i] * 100,
                 centerYList[i] * 100 - (radiusList[i] * 100) / 2 - 5));
-                
-        var p1 = Offset(centerXList[i] * 100, centerYList[i] * 100);
-        var p2 = Offset(
-            centerXList[i] * 100, centerYList[i] * 100 - radiusList[i] * 100);
+        // draw a line
+        //var p1 = Offset(centerXList[i] * 100, centerYList[i] * 100);
+        //var p2 = Offset(
+        //    centerXList[i] * 100, centerYList[i] * 100 - radiusList[i] * 100);
 
-        canvas.drawLine(p1, p2, circlePaint);
-        */
+        //canvas.drawLine(p1, p2, anchorePaint);
+        drawDashedLine(canvas, anchorePaint, centerXList[i] * 100,
+            centerYList[i] * 100, radiusList[i] * 100);
       }
+      if (anchorList.length >= 3) {
+        var position = trilaterationMethod(anchorList);
+        print(position);
+
+        canvas.drawCircle(Offset(position[0][0] * 100, position[1][0] * 100), 2,
+            positionPaint);
+      }
+    }
+  }
+
+  void drawDashedLine(Canvas canvas, Paint paint, double centerX,
+      double centerY, double radius) {
+    const int dashWidth = 4;
+    const int dashSpace = 3;
+    double startY = 0;
+    while (startY < radius - 2) {
+      // Draw a dash line
+      canvas.drawLine(Offset(centerX, centerY - startY),
+          Offset(centerX, centerY - startY - dashSpace), paint);
+      startY += dashWidth + dashSpace;
     }
   }
 

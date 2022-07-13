@@ -7,7 +7,7 @@ import 'package:flutter_toggle_tab/flutter_toggle_tab.dart';
 import 'package:widget_and_text_animator/widget_and_text_animator.dart';
 import 'package:get/get.dart';
 
-import 'trilateration_paint.dart';
+import 'animation_paint.dart';
 import 'ble_data.dart';
 import 'dart:math';
 
