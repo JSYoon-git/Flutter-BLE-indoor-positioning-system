@@ -9,10 +9,11 @@ class Anchor {
   Anchor({required this.centerX, required this.centerY, required this.radius});
 }
 
-List trilaterationMethod(List<Anchor> anchorList) {
+List trilaterationMethod(List<Anchor> anchorList, double maxDistance) {
   var matrixA = [];
   var matrixB = [];
-  Matrix2d m2d = Matrix2d();
+  const Matrix2d m2d = Matrix2d();
+
   for (int idx = 1; idx <= anchorList.length - 1; idx++) {
     // value A
     matrixA.add([
@@ -23,10 +24,18 @@ List trilaterationMethod(List<Anchor> anchorList) {
     matrixB.add([
       ((pow(anchorList[idx].centerX, 2) +
                   pow(anchorList[idx].centerY, 2) -
-                  pow(anchorList[idx].radius, 2)) -
+                  pow(
+                      anchorList[idx].radius > maxDistance
+                          ? maxDistance
+                          : anchorList[idx].radius,
+                      2)) -
               (pow(anchorList[0].centerX, 2) +
                   pow(anchorList[0].centerY, 2) -
-                  pow(anchorList[0].radius, 2))) /
+                  pow(
+                      anchorList[0].radius > maxDistance
+                          ? maxDistance
+                          : anchorList[0].radius,
+                      2))) /
           2
     ]);
   }
@@ -37,6 +46,7 @@ List trilaterationMethod(List<Anchor> anchorList) {
   return position;
 }
 
+// matrix transpose
 List transposeDouble(List list) {
   var shape = list.shape;
   var temp = List.filled(shape[1], 0.0)
@@ -50,6 +60,7 @@ List transposeDouble(List list) {
   return temp;
 }
 
+// inverse matrix
 List dim2InverseMatrix(List list) {
   var shape = list.shape;
   var temp = List.filled(shape[1], 0.0)

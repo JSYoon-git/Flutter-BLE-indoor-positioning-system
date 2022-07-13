@@ -1,4 +1,4 @@
-package com.example.ble_ips_example4
+package com.yoon.ble_indoor_positioning
 
 import io.flutter.embedding.android.FlutterActivity
 

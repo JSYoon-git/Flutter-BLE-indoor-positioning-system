@@ -22,11 +22,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Flutter Demo',
+      title: 'BLE indoor positioning',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const BLEProjectPage(title: 'Indoor Position using BLE'),
+      home: const BLEProjectPage(title: 'BLE indoor positioning'),
     );
   }
 }
@@ -63,13 +63,6 @@ class _BLEProjectPageState extends State<BLEProjectPage> {
   String serviceUUID = '';
   String manuFactureData = '';
   String tp = '';
-
-  // log distance path loss model
-  double constantN = 2;
-  int alpha = -59;
-
-  // filter
-  double alphaFilter = 0.7;
 
   var _tabScanModeIndex = 1;
   final _scanModeList = ['Low Power', 'Balanced', 'Low Latency'];
@@ -182,13 +175,7 @@ class _BLEProjectPageState extends State<BLEProjectPage> {
   /* listview widget for ble data */
   Widget widgetSelectedBLEList(int currentIdx, ScanResult r) {
     toStringBLE(r);
-    if (bleController.filterFlagList[currentIdx]) {
-      rssi = rssiFilter(
-        rssi,
-        bleController.previousValue[currentIdx],
-      );
-    }
-    bleController.previousValue[currentIdx] = r.rssi;
+
     bleController.updateBLEList(
         deviceName: deviceName,
         macAddress: macAddress,
@@ -196,8 +183,9 @@ class _BLEProjectPageState extends State<BLEProjectPage> {
         serviceUUID: serviceUUID,
         manuFactureData: manuFactureData,
         tp: tp);
-
-    num distance = logDistancePathLoss(rssi);
+    double constantN = bleController.selectedConstNList[currentIdx].toDouble();
+    double alpha = bleController.selectedRSSI_1mList[currentIdx].toDouble();
+    num distance = logDistancePathLoss(rssi, alpha, constantN);
     bleController.selectedDistanceList[currentIdx] = distance;
     String constN = bleController.selectedConstNList[currentIdx].toString();
     String rssi1m = bleController.selectedRSSI_1mList[currentIdx].toString();
@@ -268,29 +256,6 @@ class _BLEProjectPageState extends State<BLEProjectPage> {
                     bleController.selectedCenterYList[currentIdx] = value,
                 decoration: const InputDecoration(labelText: 'Center Y [m]'),
               ),
-            ),
-            Row(
-              children: [
-                const Spacer(),
-                RollingSwitch.icon(
-                  initialState: bleController.filterFlagList[currentIdx],
-                  onChanged: (bool state) {
-                    bleController.filterFlagList[currentIdx] = state;
-                  },
-                  rollingInfoRight: const RollingIconInfo(
-                    icon: Icons.flag,
-                    text: Text(
-                      'Filter',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  rollingInfoLeft: const RollingIconInfo(
-                    icon: Icons.check,
-                    backgroundColor: Colors.grey,
-                    text: Text('Raw'),
-                  ),
-                )
-              ],
             ),
           ]),
         )
@@ -450,12 +415,6 @@ class _BLEProjectPageState extends State<BLEProjectPage> {
       );
 
   /* log distance path loss model */
-  num logDistancePathLoss(String rssi) =>
+  num logDistancePathLoss(String rssi, double alpha, double constantN) =>
       pow(10.0, ((alpha - double.parse(rssi)) / (10 * constantN)));
-
-  String rssiFilter(String rssi, int previousRssi) {
-    return (((1 - alphaFilter) * previousRssi) +
-            (alphaFilter * int.parse(rssi)))
-        .toString();
-  }
 }

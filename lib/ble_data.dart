@@ -18,7 +18,6 @@ class BLEResult extends GetxController {
 
   // BTN flag
   List<bool> flagList = [];
-  List<bool> filterFlagList = [];
 
   // selected beacon param for distance
   List<int> selectedDeviceIdxList = [];
@@ -29,8 +28,8 @@ class BLEResult extends GetxController {
   List<double> selectedCenterYList = [];
   List<num> selectedDistanceList = [];
 
-  // filter value
-  List<int> previousValue = [];
+  // max distance
+  double maxDistance = 8.0;
 
   // distance value
   List<double> distanceList = [];
@@ -52,8 +51,6 @@ class BLEResult extends GetxController {
     selectedCenterXList = [];
     selectedCenterYList = [];
     selectedDistanceList = [];
-    filterFlagList = [];
-    previousValue = [];
   }
 
   void updateBLEList(
@@ -73,8 +70,6 @@ class BLEResult extends GetxController {
       manuFacturerDataList.add(manuFactureData);
       txPowerLevelList.add(tp);
       flagList.add(false);
-      filterFlagList.add(false);
-      previousValue.add(0);
     }
     update();
   }
@@ -92,8 +87,8 @@ class BLEResult extends GetxController {
           selectedDeviceNameList.add(deviceNameList[index]);
           selectedConstNList.add(2.0);
           selectedRSSI_1mList.add(-60);
-          selectedCenterXList.add(0.0);
-          selectedCenterYList.add(0.0);
+          selectedCenterXList.add(2.0);
+          selectedCenterYList.add(2.0);
           selectedDistanceList.add(0.0);
         }
       } else {
